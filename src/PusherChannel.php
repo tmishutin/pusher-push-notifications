@@ -2,7 +2,7 @@
 
 namespace NotificationChannels\PusherPushNotifications;
 
-use Pusher;
+use Pusher\PushNotifications\PushNotifications;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Events\NotificationFailed;
@@ -10,7 +10,7 @@ use Illuminate\Notifications\Events\NotificationFailed;
 class PusherChannel
 {
     /**
-     * @var \Pusher
+     * @var \Pusher\PushNotifications\PushNotifications
      */
     protected $pusher;
 
@@ -20,9 +20,9 @@ class PusherChannel
     private $events;
 
     /**
-     * @param \Pusher $pusher
+     * @param Pusher\PushNotifications\PushNotifications $pusher
      */
-    public function __construct(Pusher $pusher, Dispatcher $events)
+    public function __construct(PushNotifications $pusher, Dispatcher $events)
     {
         $this->pusher = $pusher;
         $this->events = $events;
@@ -41,13 +41,14 @@ class PusherChannel
         $interest = $notifiable->routeNotificationFor('PusherPushNotifications')
             ?: $this->interestName($notifiable);
 
-        $response = $this->pusher->notify(
+        $interest = is_string($interest) ? [$interest] : $interest;
+
+        $response = $this->pusher->publish(
             $interest,
-            $notification->toPushNotification($notifiable)->toArray(),
-            true
+            $notification->toPushNotification($notifiable)->toArray()
         );
 
-        if (! in_array($response['status'], [200, 202])) {
+        if (! array_has($response, 'publishId')) {
             $this->events->fire(
                 new NotificationFailed($notifiable, $notification, 'pusher-push-notifications', $response)
             );
