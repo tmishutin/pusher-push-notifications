@@ -7,7 +7,7 @@
         "pusher",
         "notifications"
     ],
-    "homepage": "https://github.com/LaravelNotificationChannels/pusher-push-notifications",
+    "homepage": "https://github.com/tmishutin/pusher-push-notifications",
     "license": "MIT",
     "authors": [
         {
